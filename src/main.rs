@@ -1,4 +1,9 @@
-use actix_web::{App, HttpServer};
+use actix_web::{App, HttpServer, Responder};
+
+#[actix_web::get("/health")]
+async fn health() -> impl Responder {
+  format!("Server is running")
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -7,6 +12,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
+        .service(health)
     })
     .bind(("127.0.0.1", port))?
     .workers(2)
