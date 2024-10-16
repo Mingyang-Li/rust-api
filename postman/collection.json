@@ -1,0 +1,57 @@
+{
+  "info": {
+    "_postman_id": "d1e2e1bf-d6dd-4ae3-a497-f2eaed122bbd",
+    "name": "rust-api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "15354928"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Get User By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8080/user/{{USER_ID}}",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8080",
+          "path": ["user", "{{USER_ID}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create User",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"first_name\": \"Troy\",\n    \"last_name\": \"Froy\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8080/user",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8080",
+          "path": ["user"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
