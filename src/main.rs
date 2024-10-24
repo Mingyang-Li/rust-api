@@ -1,5 +1,6 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::Serialize;
+use std::env;
 
 #[actix_web::get("/health")]
 async fn health() -> impl Responder {
@@ -39,7 +40,11 @@ async fn find_one_user(id: web::Path<String>) -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let port = 8080;
+    let port: u16 = env::var("PORT")
+    .unwrap_or_else(|_| "8080".to_string())
+    .parse()
+    .expect("PORT must be a number");
+
     println!("Server is running on port {port}");
 
     HttpServer::new(|| {
@@ -48,7 +53,7 @@ async fn main() -> std::io::Result<()> {
             .service(find_one_user)
             .service(create_user)
     })
-    .bind(("127.0.0.1", port))?
+    .bind(("0.0.0.0", port))?
     .workers(2)
     .run()
     .await
