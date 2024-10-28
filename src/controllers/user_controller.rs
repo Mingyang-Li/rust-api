@@ -1,19 +1,37 @@
 use actix_web::{web, HttpResponse};
 use serde::Serialize;
+use utoipa::ToSchema;
 
-#[derive(Serialize)]
-struct User {
+#[derive(Serialize, ToSchema)]
+pub struct User {
+    #[schema(example = "abc", required = false)]
     id: String,
+
+    #[schema(example = "Nick", required = false)]
     first_name: String,
+
+    #[schema(example = "Anderson", required = false)]
     last_name: String,
 }
 
-#[derive(serde::Deserialize)]
-struct UserCreateInput {
+#[derive(serde::Deserialize, ToSchema)]
+pub struct UserCreateInput {
+    #[schema(example = "Nick", required = true)]
     first_name: String,
+
+    #[schema(example = "Anderson", required = true)]
     last_name: String,
 }
 
+#[utoipa::path(
+    post,
+    path = "/user",
+    request_body = UserCreateInput,
+    responses(
+        (status = 201, description = "User created", body = User),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[actix_web::post("/user")]
 async fn create_user(input: web::Json<UserCreateInput>) -> HttpResponse {
     HttpResponse::Created().json(User {
@@ -23,6 +41,17 @@ async fn create_user(input: web::Json<UserCreateInput>) -> HttpResponse {
     })
 }
 
+#[utoipa::path(
+    get,
+    path = "/user/{id}",
+    params(
+        ("id" = String, description = "User ID"),
+    ),
+    responses(
+        (status = 200, description = "User found", body = User),
+        (status = 500, description = "Internal server error")
+    )
+)]
 #[actix_web::get("/user/{id}")]
 async fn find_one_user(id: web::Path<String>) -> HttpResponse {
     HttpResponse::Ok().json(User {
