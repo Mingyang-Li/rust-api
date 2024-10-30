@@ -1,6 +1,9 @@
 use actix_web::{web, HttpResponse};
 use serde::Serialize;
 use utoipa::ToSchema;
+use validator::{Validate, ValidationErrors};
+use validator_derive::Validate;
+use std::collections::HashMap;
 
 #[derive(Serialize, ToSchema)]
 pub struct User {
@@ -14,12 +17,14 @@ pub struct User {
     last_name: String,
 }
 
-#[derive(serde::Deserialize, ToSchema)]
+#[derive(serde::Deserialize, ToSchema, Validate)]
 pub struct UserCreateInput {
     #[schema(example = "Nick", required = true)]
+    #[validate(length(min = 1, message = "Must contain at least 1 character"))]
     first_name: String,
 
     #[schema(example = "Anderson", required = true)]
+    #[validate(length(min = 1, message = "Must contain at least 1 character"))]
     last_name: String,
 }
 
@@ -34,6 +39,10 @@ pub struct UserCreateInput {
 )]
 #[actix_web::post("/user")]
 async fn create_user(input: web::Json<UserCreateInput>) -> HttpResponse {
+    if let Err(errors) = input.validate() {
+        return HttpResponse::BadRequest().json(format_validation_errors(&errors));
+    }
+
     HttpResponse::Created().json(User {
         id: "AUTO_GENERATED_ID".to_string(),
         first_name: input.first_name.to_string(),
@@ -59,4 +68,29 @@ async fn find_one_user(id: web::Path<String>) -> HttpResponse {
         first_name: "Nick".to_string(),
         last_name: "Anderson".to_string(),
     })
+}
+
+#[derive(Debug, Serialize)]
+struct ErrorResponse {
+    errors: Vec<HashMap<String, String>>,
+}
+
+fn format_validation_errors(errors: &ValidationErrors) -> ErrorResponse {
+    let mut error_list = Vec::new();
+
+    for (field, field_errors) in errors.field_errors() {
+        for error in field_errors {
+            let mut error_obj = HashMap::new();
+            // Insert the field name and the actual error message from the validator
+            let message = error
+                .message
+                .clone()
+                .unwrap_or_else(|| "validation error".into())
+                .to_string();
+            error_obj.insert(field.to_string(), message);
+            error_list.push(error_obj);
+        }
+    }
+
+    ErrorResponse { errors: error_list }
 }
